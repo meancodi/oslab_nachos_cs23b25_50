@@ -154,6 +154,21 @@ void handle_SC_Add() {
     return move_program_counter();
 }
 
+void handle_SC_Abs() {
+    DEBUG(dbgSys, "Abs " << kernel->machine->ReadRegister(4) << "\n");
+
+    /* Process SysAdd Systemcall*/
+    int result;
+    result = SysAbs(
+        /* int op */ (int)kernel->machine->ReadRegister(4));
+
+    DEBUG(dbgSys, "Abs returning with " << result << "\n");
+    /* Prepare Result */
+    kernel->machine->WriteRegister(2, (int)result);
+
+    return move_program_counter();
+}
+
 void handle_SC_ReadNum() {
     int result = SysReadNum();
     kernel->machine->WriteRegister(2, result);
@@ -394,6 +409,7 @@ void handle_SC_GetPid() {
     return move_program_counter();
 }
 
+
 void ExceptionHandler(ExceptionType which) {
     int type = kernel->machine->ReadRegister(2);
 
@@ -461,6 +477,8 @@ void ExceptionHandler(ExceptionType which) {
                     return handle_SC_Signal();
                 case SC_GetPid:
                     return handle_SC_GetPid();
+                case SC_Abs:
+                    return handle_SC_Abs();
                 /**
                  * Handle all not implemented syscalls
                  * If you want to write a new handler for syscall:
