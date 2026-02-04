@@ -11,6 +11,7 @@
 //	end up calling FindNextToRun(), and that would put us in an
 //	infinite loop.
 //
+//
 // 	Very simple implementation -- no priorities, straight FIFO.
 //	Might need to be improved in later assignments.
 //
@@ -56,7 +57,6 @@ void Scheduler::ReadyToRun(Thread *thread) {
     thread->setStatus(READY);
     readyList->Append(thread);
 }
-
 //----------------------------------------------------------------------
 // Scheduler::FindNextToRun
 // 	Return the next thread to be scheduled onto the CPU.
@@ -71,7 +71,28 @@ Thread *Scheduler::FindNextToRun() {
     if (readyList->IsEmpty()) {
         return NULL;
     } else {
-        return readyList->RemoveFront();
+        cout<<"----------------------"<<endl;
+        cout<<"NumInList = "<<readyList->NumInList()<<"||"<<endl;
+        // cout<<endl<<"RL->Front"<<readyList->Front()<<endl;
+        // cout<<endl<<"||ItemAt 1"<<readyList->ItemAt(0)<<endl;
+
+        // cout<<"RL"<<readyList<<endl;
+        cout<<"Priority number in readyList:"<<endl;
+        Thread* best = readyList->Front();
+        cout<<best->priorityNumber<<",";
+        for(int i = 1;i<readyList->NumInList();i++){
+            Thread* chk = readyList->ItemAt(i);
+            cout<<chk->priorityNumber<<",";
+            if(chk->priorityNumber > best->priorityNumber){
+                best = chk;
+            }
+        }
+        // cout<<endl<<"RL->Front"<<readyList->Front()<<endl;
+        readyList->Remove(best);
+        // cout<<endl<<"Best"<<best<<endl;
+        cout<<endl<<"Selected Priority number :"<<best->priorityNumber<<endl;
+        cout<<"----------------------"<<endl;
+        return best;
     }
 }
 

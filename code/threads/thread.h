@@ -44,6 +44,9 @@
 #include "machine.h"
 #include "addrspace.h"
 
+//For rand
+#include <cstdlib>
+
 // CPU register state to be saved on context switch.
 // The x86 needs to save only a few registers,
 // SPARC and MIPS needs to save 10 registers,
@@ -90,6 +93,10 @@ class Thread {
     int processID;
     int parrentID;
     int exitStatus;
+
+    //Priority
+    int priorityNumber = std::rand()%5;
+
     void FreeSpace() {
         if (space != 0) delete space;
     }
