@@ -14,31 +14,6 @@ nachos
 # Disk images
 DISK_0
 
-# Test outputs
-code/test/abs
-code/test/add
-code/test/ascii
-code/test/bubblesort
-code/test/char_io
-code/test/create_file
-code/test/exec
-code/test/halt
-code/test/help
-code/test/main
-code/test/matmult
-code/test/num_io
-code/test/open_file
-code/test/random
-code/test/readwrite
-code/test/segments
-code/test/shell
-code/test/sinhvien
-code/test/sort
-code/test/str_io
-code/test/test_sem
-code/test/test_syscall
-code/test/voinuoc
-
 # Generated tools
 coff2noff/coff2noff.x86Linux
 
@@ -46,6 +21,5 @@ coff2noff/coff2noff.x86Linux
 usr/
 
 
-# NachOS generated build files
 code/build.linux/
 
