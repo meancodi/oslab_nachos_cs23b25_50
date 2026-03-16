@@ -1,0 +1,119 @@
+NOTE: As this was done in multiple commits, I compiled all changes into this file. 
+IMPORTANT: USE flag p in debug to see priority selections. (Eg: ./nachos -d p). To test, use the flag -K to run a test.
+
+code/lib/list.cc
++23
+Lines changed: 23 additions & 0 deletions
+Original file line number	Diff line number	Diff line change
+@@ -130,6 +130,29 @@ T List<T>::RemoveFront() {
+    return thing;
+}
+
+template <class T>
+T List<T>::ItemAt(int pos) {
+    ListElement<T> *element = first;
+    T thing;
+    ASSERT(!IsEmpty());
+    
+    // if (first == last) {  // list had one item, now has none
+    //     first = NULL;
+    //     last = NULL;
+    // } else {
+    //     first = element->next;
+    // }
+    for(int i = 0;i<pos;i++){
+        element = element->next;
+    }
+    thing = element->item;
+    
+    return thing;
+}
+//----------------------------------------------------------------------
+// List<T>::Remove
+//      Remove a specific item from the list.  Must be in the list!
+
+
+code/lib/list.h
++1
+Lines changed: 1 addition & 0 deletions
+Original file line number	Diff line number	Diff line change
+@@ -54,6 +54,7 @@ class List {
+    // Return first item on list
+    // without removing it
+    T RemoveFront();      // Take item off the front of the list
+    T ItemAt(int pos);
+    void Remove(T item);  // Remove specific item from list
+
+    bool IsInList(T item) const;  // is the item in the list?
+
+code/threads/scheduler.cc
++23
+-2
+Lines changed: 23 additions & 2 deletions
+Original file line number	Diff line number	Diff line change
+@@ -11,6 +11,7 @@
+//	end up calling FindNextToRun(), and that would put us in an
+//	infinite loop.
+//
+//
+// 	Very simple implementation -- no priorities, straight FIFO.
+//	Might need to be improved in later assignments.
+//
+@@ -56,7 +57,6 @@ void Scheduler::ReadyToRun(Thread *thread) {
+    thread->setStatus(READY);
+    readyList->Append(thread);
+}
+//----------------------------------------------------------------------
+// Scheduler::FindNextToRun
+// 	Return the next thread to be scheduled onto the CPU.
+@@ -71,7 +71,28 @@ Thread *Scheduler::FindNextToRun() {
+    if (readyList->IsEmpty()) {
+        return NULL;
+    } else {
+        return readyList->RemoveFront();
+        cout<<"----------------------"<<endl;
+        cout<<"NumInList = "<<readyList->NumInList()<<"||"<<endl;
+        // cout<<endl<<"RL->Front"<<readyList->Front()<<endl;
+        // cout<<endl<<"||ItemAt 1"<<readyList->ItemAt(0)<<endl;
+        // cout<<"RL"<<readyList<<endl;
+        cout<<"Priority number in readyList:"<<endl;
+        Thread* best = readyList->Front();
+        cout<<best->priorityNumber<<",";
+        for(int i = 1;i<readyList->NumInList();i++){
+            Thread* chk = readyList->ItemAt(i);
+            cout<<chk->priorityNumber<<",";
+            if(chk->priorityNumber > best->priorityNumber){
+                best = chk;
+            }
+        }
+        // cout<<endl<<"RL->Front"<<readyList->Front()<<endl;
+        readyList->Remove(best);
+        // cout<<endl<<"Best"<<best<<endl;
+        cout<<endl<<"Selected Priority number :"<<best->priorityNumber<<endl;
+        cout<<"----------------------"<<endl;
+        return best;
+    }
+}
+
+code/threads/thread.h
++7
+Lines changed: 7 additions & 0 deletions
+Original file line number	Diff line number	Diff line change
+@@ -44,6 +44,9 @@
+#include "machine.h"
+#include "addrspace.h"
+
+//For rand
+#include <cstdlib>
+// CPU register state to be saved on context switch.
+// The x86 needs to save only a few registers,
+// SPARC and MIPS needs to save 10 registers,
+@@ -90,6 +93,10 @@ class Thread {
+    int processID;
+    int parrentID;
+    int exitStatus;
+    //Priority
+    int priorityNumber = std::rand()%5;
+    void FreeSpace() {
+        if (space != 0) delete space;
+    }
