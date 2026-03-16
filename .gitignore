@@ -1,25 +1,9 @@
-# NachOS build output
-code/build.linux/
-build/
 
-# Executables
-nachos
-*.o
-*.out
-*.gch
 
-# COFF binaries
-*.coff
-
-# Disk images
 DISK_0
 
-# Generated tools
-coff2noff/coff2noff.x86Linux
 
 # Runtime
 usr/
 
-
-code/build.linux/
 
