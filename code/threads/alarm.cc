@@ -20,8 +20,33 @@
 //		occur at random, instead of fixed, intervals.
 //----------------------------------------------------------------------
 
-Alarm::Alarm(bool doRandom) { timer = new Timer(doRandom, this); }
+Alarm::Alarm(bool doRandom) { timer = new Timer(doRandom, this); sleepCount = 0;}
 
+//------------------------------------------------------------------------
+// Alarm:WaitUntill
+// x = number of ticks to sleep
+//------------------------------------------------------------------------
+
+void Alarm::WaitUntil(int x) {
+    // x is seconds directly — no conversion needed
+    clock_t start = clock();
+    while ((double)(clock() - start) / CLOCKS_PER_SEC < (double)x) {}
+
+    IntStatus oldLevel = kernel->interrupt->SetLevel(IntOff);
+    sleepQueue[sleepCount].thread   = kernel->currentThread;
+    sleepQueue[sleepCount].wakeTime = kernel->stats->totalTicks + (x * TimerTicks);
+    sleepCount++;
+
+
+    DEBUG('s', "[Sleep] Thread '" << kernel->currentThread->getName() 
+              << "' sleeping for " << x << " second(s) [100 ticks = 1 sec]. "
+              << "currentTick=" << kernel->stats->totalTicks 
+              << " wakeTime=" << sleepQueue[sleepCount-1].wakeTime << "\n");
+
+
+    kernel->currentThread->Sleep(false);
+    kernel->interrupt->SetLevel(oldLevel);
+}
 //----------------------------------------------------------------------
 // Alarm::CallBack
 //	Software interrupt handler for the timer device. The timer device is
@@ -44,7 +69,26 @@ void Alarm::CallBack() {
     Interrupt *interrupt = kernel->interrupt;
     MachineStatus status = interrupt->getStatus();
 
-    if (status != IdleMode) {
+    // Walk the array and wake any thread whose time has come
+    for (int i = sleepCount - 1; i >= 0; i--) {
+        if (kernel->stats->totalTicks >= sleepQueue[i].wakeTime) {
+            
+            DEBUG('s', "[Sleep] Thread '" << sleepQueue[i].thread->getName()
+                      << "' woke up at tick=" << kernel->stats->totalTicks
+                      << " (was scheduled for tick=" << sleepQueue[i].wakeTime << ")"
+                      << " delta=" << (kernel->stats->totalTicks - sleepQueue[i].wakeTime)
+                      << " tick(s) late\n");
+            
+            // Wake the thread
+            kernel->scheduler->ReadyToRun(sleepQueue[i].thread);
+
+            // Remove by swapping with the last element
+            sleepQueue[i] = sleepQueue[sleepCount - 1];
+            sleepCount--;
+        }
+    }
+
+    if (status != IdleMode || sleepCount > 0) {
         interrupt->YieldOnReturn();
     }
 }

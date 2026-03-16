@@ -21,6 +21,14 @@
 #include "utility.h"
 #include "callback.h"
 #include "timer.h"
+#include "thread.h" 
+
+#define MAX_SLEEPING_THREADS 300 
+
+struct SleepingThread {
+    Thread *thread;
+    int wakeTime;      // absolute tick count to wake up at
+};
 
 // The following class defines a software alarm clock.
 class Alarm : public CallBackObj {
@@ -28,6 +36,7 @@ class Alarm : public CallBackObj {
     Alarm(bool doRandomYield);  // Initialize the timer, and callback
                                 // to "toCall" every time slice.
     ~Alarm() { delete timer; }
+
 
     void WaitUntil(int x);  // suspend execution until time > now + x
                             // this method is not yet implemented
@@ -37,6 +46,9 @@ class Alarm : public CallBackObj {
 
     void CallBack();  // called when the hardware
                       // timer generates an interrupt
+
+    SleepingThread sleepQueue[MAX_SLEEPING_THREADS]; 
+    int sleepCount;
 };
 
 #endif  // ALARM_H

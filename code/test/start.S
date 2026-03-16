@@ -66,8 +66,19 @@ Abs:
 	j 	$31
 	.end Abs
 
+	
+
+	.globl Sleep
+    .ent   Sleep
+Sleep:
+    addiu $2,$0,SC_Sleep   
+    syscall               
+    j     $31              
+    .end  Sleep
+
 	.globl Exit
 	.ent	Exit
+
 Exit:
 	addiu $2,$0,SC_Exit
 	syscall

@@ -169,6 +169,14 @@ void handle_SC_Abs() {
     return move_program_counter();
 }
 
+void handle_SC_Sleep(){
+    int seconds = kernel->machine->ReadRegister(4);  // read arg1 from $r4
+    DEBUG(dbgSys, "Sleep " << seconds << " seconds.\n");
+    SysSleep(seconds);          // calls alarm->WaitUntil internally
+
+    return move_program_counter();  // advance PC so syscall doesn't repeat
+}
+
 void handle_SC_ReadNum() {
     int result = SysReadNum();
     kernel->machine->WriteRegister(2, result);
@@ -479,6 +487,8 @@ void ExceptionHandler(ExceptionType which) {
                     return handle_SC_GetPid();
                 case SC_Abs:
                     return handle_SC_Abs();
+                case SC_Sleep:
+                    return handle_SC_Sleep();
                 /**
                  * Handle all not implemented syscalls
                  * If you want to write a new handler for syscall:
