@@ -84,7 +84,8 @@ class Thread {
 
    public:
     Thread(char *debugName,
-           bool _has_dynamic_name = false);  // initialize a Thread
+           bool _has_dynamic_name = false); 
+    Thread(char *debugName, int pDes, bool _has_dynamic_name = false); // initialize a Thread
     ~Thread();                               // deallocate a Thread
                                              // NOTE -- thread being deleted
                                              // must not be running when delete
@@ -93,6 +94,7 @@ class Thread {
     int processID;
     int parrentID;
     int exitStatus;
+    int pipeDesNum;
 
     //Priority
     int priorityNumber = std::rand()%5;

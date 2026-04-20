@@ -35,7 +35,12 @@ const int STACK_FENCEPOST = 0xdedbeef;
 
 Thread::Thread(char *threadName, bool _has_dynamic_name /*=false*/) {
     has_dynamic_name = _has_dynamic_name;
-    name = threadName;
+    if (has_dynamic_name && threadName != NULL) {
+        name = new char[strlen(threadName) + 1];
+        strcpy(name, threadName);
+    } else {
+        name = threadName;
+    }
     stackTop = NULL;
     stack = NULL;
     status = JUST_CREATED;
@@ -45,6 +50,23 @@ Thread::Thread(char *threadName, bool _has_dynamic_name /*=false*/) {
                                  // of machine registers
     }
     space = NULL;
+    pipeDesNum = -1;
+}
+
+Thread::Thread(char *threadName, int pDes, bool _has_dynamic_name) {
+    has_dynamic_name = _has_dynamic_name;
+    if (has_dynamic_name && threadName != NULL) {
+        name = new char[strlen(threadName) + 1];
+        strcpy(name, threadName);
+    } else {
+        name = threadName;
+    }
+    stackTop = NULL;
+    stack = NULL;
+    status = JUST_CREATED;
+    for (int i = 0; i < MachineStateSize; i++) { machineState[i] = NULL; }
+    space = NULL;
+    pipeDesNum = pDes; 
 }
 
 //----------------------------------------------------------------------

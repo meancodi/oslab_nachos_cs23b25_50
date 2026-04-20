@@ -219,6 +219,26 @@ int SysExec(char* name) {
     return kernel->pTab->ExecUpdate(name);
 }
 
+int SysExecP(char* name,int pDes) {
+    OpenFile* ofile = kernel->fileSystem->Open(name);
+    if(ofile == NULL) {
+        DEBUG(dbgSys, "\nExec:: Can't open this file.");
+        return -1;
+    }
+
+    delete ofile;
+    return kernel->pTab->ExecUpdate(name,pDes);
+}
+
+int SysPipe(int* x,int*y){
+    int result = kernel->pipeDes->createDes(x,y,"pipe");
+    return result;
+}
+
+int SysGetPD(){
+    return kernel->currentThread->pipeDesNum;
+}
+
 int SysJoin(int id) { return kernel->pTab->JoinUpdate(id); }
 
 int SysExit(int id) { return kernel->pTab->ExitUpdate(id); }

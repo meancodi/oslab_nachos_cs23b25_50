@@ -1,0 +1,303 @@
+NOTE: Use debug flag -s to see the tick changes (Usage: ./nachos -d s ../test/sleep)
+
+diff --git a/code/test/Makefile b/code/test/Makefile
+index 7b77633..c1018db 100644
+--- a/code/test/Makefile
++++ b/code/test/Makefile
+@@ -112,7 +112,7 @@ ifeq ($(hosttype),unknown)
+ PROGRAMS = unknownhost
+ else
+ # change this if you create a new test program!
+-PROGRAMS = add abs halt shell matmult sort segments test_syscall num_io char_io random str_io ascii bubblesort help create_file open_file readwrite exec test_sem sinhvien voinuoc main
++PROGRAMS = add abs sleep halt shell matmult sort segments test_syscall num_io char_io random str_io ascii bubblesort help create_file open_file readwrite exec test_sem sinhvien voinuoc main
+ endif
+ 
+ all: $(PROGRAMS)
+@@ -139,6 +139,12 @@ abs: abs.o start.o
+ 	$(LD) $(LDFLAGS) start.o abs.o -o abs.coff
+ 	$(COFF2NOFF) abs.coff abs
+ 
++sleep.o : sleep.c
++	$(CC) $(CFLAGS) -c sleep.c
++sleep: sleep.o start.o
++	$(LD) $(LDFLAGS) start.o sleep.o -o sleep.coff
++	$(COFF2NOFF) sleep.coff sleep
++
+ shell.o: shell.c
+ 	$(CC) $(CFLAGS) -c shell.c
+ shell: shell.o start.o
+diff --git a/code/test/abs b/code/test/abs
+index d472248..37ba3a2 100644
+Binary files a/code/test/abs and b/code/test/abs differ
+diff --git a/code/test/add b/code/test/add
+index 78aabdf..5cabd76 100644
+Binary files a/code/test/add and b/code/test/add differ
+diff --git a/code/test/ascii b/code/test/ascii
+index 37b36f2..7ff77f9 100644
+Binary files a/code/test/ascii and b/code/test/ascii differ
+diff --git a/code/test/bubblesort b/code/test/bubblesort
+index 6fa139f..008be74 100644
+Binary files a/code/test/bubblesort and b/code/test/bubblesort differ
+diff --git a/code/test/char_io b/code/test/char_io
+index c2b8e17..31f84f8 100644
+Binary files a/code/test/char_io and b/code/test/char_io differ
+diff --git a/code/test/create_file b/code/test/create_file
+index 4b86843..04e4f02 100644
+Binary files a/code/test/create_file and b/code/test/create_file differ
+diff --git a/code/test/exec b/code/test/exec
+index 9d7f85b..528c7a7 100644
+Binary files a/code/test/exec and b/code/test/exec differ
+diff --git a/code/test/halt b/code/test/halt
+index 5da5eda..e04b2a3 100644
+Binary files a/code/test/halt and b/code/test/halt differ
+diff --git a/code/test/help b/code/test/help
+index b5ee3a3..671a923 100644
+Binary files a/code/test/help and b/code/test/help differ
+diff --git a/code/test/main b/code/test/main
+index 0766d5a..6fedf9a 100644
+Binary files a/code/test/main and b/code/test/main differ
+diff --git a/code/test/matmult b/code/test/matmult
+index d5b50df..60a1d50 100644
+Binary files a/code/test/matmult and b/code/test/matmult differ
+diff --git a/code/test/num_io b/code/test/num_io
+index bcc75c4..64447a1 100644
+Binary files a/code/test/num_io and b/code/test/num_io differ
+diff --git a/code/test/open_file b/code/test/open_file
+index 459db2e..06ff2d4 100644
+Binary files a/code/test/open_file and b/code/test/open_file differ
+diff --git a/code/test/random b/code/test/random
+index 3bd4380..2916287 100644
+Binary files a/code/test/random and b/code/test/random differ
+diff --git a/code/test/readwrite b/code/test/readwrite
+index 0b5a45e..b152c33 100644
+Binary files a/code/test/readwrite and b/code/test/readwrite differ
+diff --git a/code/test/segments b/code/test/segments
+index a945403..e248a42 100644
+Binary files a/code/test/segments and b/code/test/segments differ
+diff --git a/code/test/shell b/code/test/shell
+index 65013a5..5bd8a80 100644
+Binary files a/code/test/shell and b/code/test/shell differ
+diff --git a/code/test/sinhvien b/code/test/sinhvien
+index f8b78a8..21d5816 100644
+Binary files a/code/test/sinhvien and b/code/test/sinhvien differ
+diff --git a/code/test/sort b/code/test/sort
+index eb67997..b69d3af 100644
+Binary files a/code/test/sort and b/code/test/sort differ
+diff --git a/code/test/start.S b/code/test/start.S
+index d1b5835..5688ee3 100644
+--- a/code/test/start.S
++++ b/code/test/start.S
+@@ -66,8 +66,19 @@ Abs:
+ 	j 	$31
+ 	.end Abs
+ 
++	
++
++	.globl Sleep
++    .ent   Sleep
++Sleep:
++    addiu $2,$0,SC_Sleep   
++    syscall               
++    j     $31              
++    .end  Sleep
++
+ 	.globl Exit
+ 	.ent	Exit
++
+ Exit:
+ 	addiu $2,$0,SC_Exit
+ 	syscall
+diff --git a/code/test/str_io b/code/test/str_io
+index a1c9fb4..41aca23 100644
+Binary files a/code/test/str_io and b/code/test/str_io differ
+diff --git a/code/test/test_sem b/code/test/test_sem
+index 99b0dd6..f7b2d40 100644
+Binary files a/code/test/test_sem and b/code/test/test_sem differ
+diff --git a/code/test/test_syscall b/code/test/test_syscall
+index 5d809cf..73f9374 100644
+Binary files a/code/test/test_syscall and b/code/test/test_syscall differ
+diff --git a/code/test/voinuoc b/code/test/voinuoc
+index 369bd15..72a0346 100644
+Binary files a/code/test/voinuoc and b/code/test/voinuoc differ
+diff --git a/code/threads/alarm.cc b/code/threads/alarm.cc
+index ce30385..a2277b4 100644
+--- a/code/threads/alarm.cc
++++ b/code/threads/alarm.cc
+@@ -20,8 +20,33 @@
+ //		occur at random, instead of fixed, intervals.
+ //----------------------------------------------------------------------
+ 
+-Alarm::Alarm(bool doRandom) { timer = new Timer(doRandom, this); }
++Alarm::Alarm(bool doRandom) { timer = new Timer(doRandom, this); sleepCount = 0;}
+ 
++//------------------------------------------------------------------------
++// Alarm:WaitUntill
++// x = number of ticks to sleep
++//------------------------------------------------------------------------
++
++void Alarm::WaitUntil(int x) {
++    // x is seconds directly — no conversion needed
++    clock_t start = clock();
++    while ((double)(clock() - start) / CLOCKS_PER_SEC < (double)x) {}
++
++    IntStatus oldLevel = kernel->interrupt->SetLevel(IntOff);
++    sleepQueue[sleepCount].thread   = kernel->currentThread;
++    sleepQueue[sleepCount].wakeTime = kernel->stats->totalTicks + (x * TimerTicks);
++    sleepCount++;
++
++
++    DEBUG('s', "[Sleep] Thread '" << kernel->currentThread->getName() 
++              << "' sleeping for " << x << " second(s) [100 ticks = 1 sec]. "
++              << "currentTick=" << kernel->stats->totalTicks 
++              << " wakeTime=" << sleepQueue[sleepCount-1].wakeTime << "\n");
++
++
++    kernel->currentThread->Sleep(false);
++    kernel->interrupt->SetLevel(oldLevel);
++}
+ //----------------------------------------------------------------------
+ // Alarm::CallBack
+ //	Software interrupt handler for the timer device. The timer device is
+@@ -44,7 +69,26 @@ void Alarm::CallBack() {
+     Interrupt *interrupt = kernel->interrupt;
+     MachineStatus status = interrupt->getStatus();
+ 
+-    if (status != IdleMode) {
++    // Walk the array and wake any thread whose time has come
++    for (int i = sleepCount - 1; i >= 0; i--) {
++        if (kernel->stats->totalTicks >= sleepQueue[i].wakeTime) {
++            
++            DEBUG('s', "[Sleep] Thread '" << sleepQueue[i].thread->getName()
++                      << "' woke up at tick=" << kernel->stats->totalTicks
++                      << " (was scheduled for tick=" << sleepQueue[i].wakeTime << ")"
++                      << " delta=" << (kernel->stats->totalTicks - sleepQueue[i].wakeTime)
++                      << " tick(s) late\n");
++            
++            // Wake the thread
++            kernel->scheduler->ReadyToRun(sleepQueue[i].thread);
++
++            // Remove by swapping with the last element
++            sleepQueue[i] = sleepQueue[sleepCount - 1];
++            sleepCount--;
++        }
++    }
++
++    if (status != IdleMode || sleepCount > 0) {
+         interrupt->YieldOnReturn();
+     }
+ }
+diff --git a/code/threads/alarm.h b/code/threads/alarm.h
+index af6dd02..455bb2d 100644
+--- a/code/threads/alarm.h
++++ b/code/threads/alarm.h
+@@ -21,6 +21,14 @@
+ #include "utility.h"
+ #include "callback.h"
+ #include "timer.h"
++#include "thread.h" 
++
++#define MAX_SLEEPING_THREADS 300 
++
++struct SleepingThread {
++    Thread *thread;
++    int wakeTime;      // absolute tick count to wake up at
++};
+ 
+ // The following class defines a software alarm clock.
+ class Alarm : public CallBackObj {
+@@ -29,6 +37,7 @@ class Alarm : public CallBackObj {
+                                 // to "toCall" every time slice.
+     ~Alarm() { delete timer; }
+ 
++
+     void WaitUntil(int x);  // suspend execution until time > now + x
+                             // this method is not yet implemented
+ 
+@@ -37,6 +46,9 @@ class Alarm : public CallBackObj {
+ 
+     void CallBack();  // called when the hardware
+                       // timer generates an interrupt
++
++    SleepingThread sleepQueue[MAX_SLEEPING_THREADS]; 
++    int sleepCount;
+ };
+ 
+ #endif  // ALARM_H
+diff --git a/code/userprog/exception.cc b/code/userprog/exception.cc
+index 5a3a99c..3fb7134 100644
+--- a/code/userprog/exception.cc
++++ b/code/userprog/exception.cc
+@@ -169,6 +169,14 @@ void handle_SC_Abs() {
+     return move_program_counter();
+ }
+ 
++void handle_SC_Sleep(){
++    int seconds = kernel->machine->ReadRegister(4);  // read arg1 from $r4
++    DEBUG(dbgSys, "Sleep " << seconds << " seconds.\n");
++    SysSleep(seconds);          // calls alarm->WaitUntil internally
++
++    return move_program_counter();  // advance PC so syscall doesn't repeat
++}
++
+ void handle_SC_ReadNum() {
+     int result = SysReadNum();
+     kernel->machine->WriteRegister(2, result);
+@@ -479,6 +487,8 @@ void ExceptionHandler(ExceptionType which) {
+                     return handle_SC_GetPid();
+                 case SC_Abs:
+                     return handle_SC_Abs();
++                case SC_Sleep:
++                    return handle_SC_Sleep();
+                 /**
+                  * Handle all not implemented syscalls
+                  * If you want to write a new handler for syscall:
+diff --git a/code/userprog/ksyscall.h b/code/userprog/ksyscall.h
+index 34829d5..e6caff2 100644
+--- a/code/userprog/ksyscall.h
++++ b/code/userprog/ksyscall.h
+@@ -15,6 +15,8 @@
+ #include "synchconsole.h"
+ #include "ksyscallhelper.h"
+ #include <stdlib.h>
++#include "stats.h"
++#include <time.h> 
+ 
+ #define INT32_MIN 0
+ 
+@@ -24,6 +26,15 @@ int SysAdd(int op1, int op2) { return op1 + op2; }
+ 
+ int SysAbs(int op) { return op > 0 ? op:-op;}
+ 
++void SysSleep(int ticks) {
++    // Convert seconds → ticks: NachOS runs ~100 ticks/second
++    
++    kernel->alarm->WaitUntil(ticks);
++
++    // clock_t start = clock();
++    // while ((double)(clock() - start) / CLOCKS_PER_SEC < (double)seconds) {}
++}
++
+ int SysReadNum() {
+     readUntilBlank();
+ 
+diff --git a/code/userprog/syscall.h b/code/userprog/syscall.h
+index a71f687..d1a94ce 100644
+--- a/code/userprog/syscall.h
++++ b/code/userprog/syscall.h
+@@ -49,6 +49,7 @@
+ #define SC_Signal 53
+ #define SC_GetPid 54
+ #define SC_Abs 55
++#define SC_Sleep 56
+ 
+ #ifndef IN_ASM
+ 
+@@ -213,6 +214,8 @@ void ThreadExit(int ExitCode);
+ 
+ unsigned int Abs(int);
+ 
++void Sleep(int t);  // sleep for t seconds (converted to ticks in kernel)
++
+ 
+ #endif /* IN_ASM */
+ 

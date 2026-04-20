@@ -6,6 +6,9 @@ PCB::PCB(int id) {
     joinsem = new Semaphore("joinsem", 0);
     exitsem = new Semaphore("exitsem", 0);
     multex = new Semaphore("multex", 1);
+    thread = NULL;
+    numwait = 0;
+    exitcode = 0;
 }
 
 PCB::~PCB() {
@@ -19,7 +22,7 @@ PCB::~PCB() {
         // delete thread;
     }
 
-    delete[] filename;
+    
 }
 
 void StartProcess_2(void* pid) {
@@ -73,6 +76,20 @@ int PCB::Exec(char* filename, int id) {
 
     multex->V();
     // Trả về id.
+    return id;
+}
+
+int PCB::Exec(char* filename, int id, int pDes) {
+    multex->P();
+    this->thread = new Thread(filename, pDes, true); // Use overloaded thread
+    if (this->thread == NULL) {
+        multex->V();
+        return -1;
+    }
+    this->thread->processID = id;
+    this->parentID = kernel->currentThread->processID;
+    this->thread->Fork(StartProcess_2, &this->thread->processID);
+    multex->V();
     return id;
 }
 
