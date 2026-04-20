@@ -503,6 +503,13 @@ void ExceptionHandler(ExceptionType which) {
             DEBUG(dbgSys, "Switch to system mode\n");
             break;
         case PageFaultException:
+        {
+            int faultingAddr = kernel->machine->ReadRegister(BadVAddrReg);
+            cout << "### Page fault at address: " << faultingAddr << " ###" << endl;
+            kernel->currentThread->space->LoadPage(faultingAddr);
+            kernel->currentThread->space->RestoreState();
+            return;
+        }
         case ReadOnlyException:
         case BusErrorException:
         case AddressErrorException:

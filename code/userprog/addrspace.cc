@@ -84,10 +84,12 @@ AddrSpace::AddrSpace() {
 //----------------------------------------------------------------------
 
 AddrSpace::~AddrSpace() {
-    int i;
-    for (i = 0; i < numPages; i++) {
-        kernel->gPhysPageBitMap->Clear(pageTable[i].physicalPage);
+    for (int i = 0; i < numPages; i++) {
+        if(pageTable[i].valid == TRUE) {
+            kernel->gPhysPageBitMap->Clear(pageTable[i].physicalPage);
+        }
     }
+    delete executable;
     delete[] pageTable;
 }
 
@@ -148,9 +150,9 @@ AddrSpace::AddrSpace(char *fileName) {
     pageTable = new TranslationEntry[numPages];
     for (i = 0; i < numPages; i++) {
         pageTable[i].virtualPage = i;  // for now, virtual page # = phys page #
-        pageTable[i].physicalPage = kernel->gPhysPageBitMap->FindAndSet();
+        pageTable[i].physicalPage = pageTable[i].physicalPage = -1;
         // cerr << pageTable[i].physicalPage << endl;
-        pageTable[i].valid = TRUE;
+        pageTable[i].valid = FALSE;
         pageTable[i].use = FALSE;
         pageTable[i].dirty = FALSE;
         pageTable[i].readOnly = FALSE;  // if the code segment was entirely on
@@ -163,24 +165,25 @@ AddrSpace::AddrSpace(char *fileName) {
         DEBUG(dbgAddr, "phyPage " << pageTable[i].physicalPage);
     }
 
-    if (noffH.code.size > 0) {
-        for (i = 0; i < numPages; i++)
-            executable->ReadAt(
-                &(kernel->machine->mainMemory[noffH.code.virtualAddr]) +
-                    (pageTable[i].physicalPage * PageSize),
-                PageSize, noffH.code.inFileAddr + (i * PageSize));
-    }
+    // if (noffH.code.size > 0) {
+    //     for (i = 0; i < numPages; i++)
+    //         executable->ReadAt(
+    //             &(kernel->machine->mainMemory[noffH.code.virtualAddr]) +
+    //                 (pageTable[i].physicalPage * PageSize),
+    //             PageSize, noffH.code.inFileAddr + (i * PageSize));
+    // }
 
-    if (noffH.initData.size > 0) {
-        for (i = 0; i < numPages; i++)
-            executable->ReadAt(
-                &(kernel->machine->mainMemory[noffH.initData.virtualAddr]) +
-                    (pageTable[i].physicalPage * PageSize),
-                PageSize, noffH.initData.inFileAddr + (i * PageSize));
-    }
+    // if (noffH.initData.size > 0) {
+    //     for (i = 0; i < numPages; i++)
+    //         executable->ReadAt(
+    //             &(kernel->machine->mainMemory[noffH.initData.virtualAddr]) +
+    //                 (pageTable[i].physicalPage * PageSize),
+    //             PageSize, noffH.initData.inFileAddr + (i * PageSize));
+    // }
 
-    kernel->addrLock->V();
-    delete executable;
+    exeFileName = fileName;
+    this->executable = executable;
+    this->noffH = noffH;
     return;
 }
 
@@ -308,4 +311,32 @@ ExceptionType AddrSpace::Translate(unsigned int vaddr, unsigned int *paddr,
     //  ", paddr: " << *paddr << "\n";
 
     return NoException;
+}
+
+void AddrSpace::LoadPage(int vaddr){
+    int vpn = vaddr / PageSize;
+
+    int codeStart = noffH.code.virtualAddr / PageSize;
+    int codeEnd = (noffH.code.virtualAddr + noffH.code.size - 1) / PageSize;
+    int initDataStart = noffH.initData.virtualAddr / PageSize;
+    int initDataEnd = (noffH.initData.virtualAddr + noffH.initData.size - 1) / PageSize;
+
+    pageTable[vpn].physicalPage = kernel->gPhysPageBitMap->FindAndSet();
+    ASSERT(pageTable[vpn].physicalPage >= 0);
+
+    bzero(&(kernel->machine->mainMemory[pageTable[vpn].physicalPage * PageSize]), PageSize);
+
+    if(vpn >= codeStart && vpn <= codeEnd){
+        cout << "Loading code page " << vpn << "\n";
+        executable->ReadAt(&kernel->machine->mainMemory[(pageTable[vpn].physicalPage) * PageSize], PageSize, noffH.code.inFileAddr + (vpn - codeStart) * PageSize);
+    } else if (vpn >= initDataStart && vpn <= initDataEnd) {
+        cout << "Loading Data Segment for Virtual Page: " << vpn << endl;
+        executable->ReadAt(
+            &kernel->machine->mainMemory[(pageTable[vpn].physicalPage * PageSize)],
+            PageSize,
+            noffH.initData.inFileAddr + ((vpn - initDataStart) * PageSize)
+        );
+    }
+
+    pageTable[vpn].valid = TRUE;
 }
